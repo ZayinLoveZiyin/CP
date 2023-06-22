@@ -1,5 +1,7 @@
 struct info {
   friend info operator+(const info& lhs, const info& rhs) {}
+
+  friend std::ostream &operator<<(std::ostream &os, const info &v) {}
 };
 
 template <typename T>
