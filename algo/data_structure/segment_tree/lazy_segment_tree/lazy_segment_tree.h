@@ -1,3 +1,16 @@
+struct lazy_tag {
+  void apply(const lazy_tag& t) {}
+  friend std::ostream& operator<<(std::ostream& os, const lazy_tag& t) {}
+};
+
+struct lazy_info {
+  friend lazy_info operator+(const lazy_info& lhs, const lazy_info& rhs) {}
+
+  void apply(const lazy_tag& t) {}
+
+  friend std::ostream& operator<<(std::ostream& os, const lazy_info& t) {}
+};
+
 template <typename Info, typename Tag>
 class lazy_segment_tree {
  public:

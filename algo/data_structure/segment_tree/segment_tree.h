@@ -7,10 +7,10 @@ struct info {
 template <typename T>
 class segment_tree {
  public:
-  segment_tree(int n_) {
+  segment_tree(int n_, const T& t = T()) : raw_n(n_) {
     for (n = 1; n < n_; n <<= 1) {
     }
-    tree.resize(n << 1);
+    tree.resize(n << 1, t);
   }
   template <typename U>
   segment_tree(
@@ -21,16 +21,16 @@ class segment_tree {
   }
 
   void change(int i, const T& t) {
-    assert(0 <= i && i < n);
+    assert(0 <= i && i < raw_n);
     tree[i += n] = t;
     while (i >>= 1) tree[i] = tree[i << 1] + tree[i << 1 | 1];
   }
 
   // [l,r]
   T composite(int l, int r) {
-    assert(0 <= l && l < n);
-    assert(0 <= r && r < n);
     if (l > r) return T();
+    assert(0 <= l && l < raw_n);
+    assert(0 <= r && r < raw_n);
     T prodL, prodR;
     for (l += n, r += n + 1; l < r; l >>= 1, r >>= 1) {
       if (l & 1) prodL = prodL + tree[l++];
@@ -39,7 +39,43 @@ class segment_tree {
     return prodL + prodR;
   }
 
+  // find max l s.t. predicate(composite(l,r)) returns true,
+  // should guarantee that for all p<=l, predicate(composite(p,r)) return true
+  // returns -1 if there is no such l.
+  int find_left(int r, std::function<bool(const info&)> predicate) {
+    assert(0 <= r && r < raw_n);
+    if (predicate(info())) return r + 1;
+    for (r += n + 1;; r >>= 1)
+      if ((r & 1) || r == 2) {
+        if (predicate(tree[r - 1])) {
+          for (; r <= n;)
+            if (!predicate(tree[(r <<= 1) - 1])) --r;
+          return r - n - 1;
+        }
+        --r;
+        if (!(r & (r - 1))) return -1;
+      }
+  }
+
+  // find min r s.t. predicate(composite(l,r)) returns true,
+  // should guarantee that for all p>=r, predicate(composite(l,p)) return true
+  // returns n if there is no such r.
+  int find_right(int l, std::function<bool(const info&)> predicate) {
+    assert(0 <= l && l < raw_n);
+    if (predicate(info())) return l - 1;
+    for (l += n;; l >>= 1)
+      if (l & 1) {
+        if (predicate(tree[l])) {
+          for (; l < n;)
+            if (!predicate(tree[l <<= 1])) ++l;
+          return l - n;
+        }
+        ++l;
+        if (!(l & (l - 1))) return raw_n;
+      }
+  }
+
  private:
-  int n;
+  int raw_n, n;
   std::vector<T> tree;
 };
