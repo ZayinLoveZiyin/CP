@@ -168,6 +168,11 @@ class debug_helper {
   static void dump(ostreamType& os, std::string names, Args... args) {
     std::vector<std::string> val;
     (val.push_back(convertor::to_string(args)), ...);
+    if (!names.size() || !val.size()) {
+      os << '\n';
+      os.reflesh();
+      return;
+    };
 
     std::vector<std::string> name{""};
     int count = 0;
@@ -302,7 +307,11 @@ class debug_helper {
   };
 };
 
-#define dbg(args...) io::debug_helper::dump(io::cout, #args, ##args)
+#define dbg_os io::cout
+#define dbg(args...) io::debug_helper::dump(dbg_os, #args, ##args)
+#define dbgf(name, args...)       \
+  dbg_os << "[" << name << "]: "; \
+  io::debug_helper::dump(dbg_os, #args, ##args)
 
 #define single_dump(x) #x << " = " << x
 #define concat_dump(left, right) left << ", " << right
