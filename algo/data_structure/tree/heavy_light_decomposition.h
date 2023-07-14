@@ -64,10 +64,63 @@ struct heavy_light_decomposition {
     return seq[in[u] + d - dep[u]];
   }
 
+  std::vector<std::pair<int, int>> get_path(int u, int v) {
+    std::vector<std::pair<int, int>> lpath, rpath;
+    while (top[u] != top[v]) {
+      if (dep[top[u]] > dep[top[v]]) {
+        lpath.emplace_back(u, top[u]);
+        u = fa[top[u]];
+      } else {
+        rpath.emplace_back(top[v], v);
+        v = fa[top[v]];
+      }
+    }
+    std::vector<std::pair<int, int>> path = std::move(lpath);
+    path.emplace_back(u, v);
+    for (; rpath.size(); rpath.pop_back()) path.push_back(rpath.back());
+    return path;
+  }
+
+  void align_path(std::vector<std::pair<int, int>>& path1,
+                  std::vector<std::pair<int, int>>& path2) {
+    std::vector<std::pair<int, int>> result_path1;
+    std::vector<std::pair<int, int>> result_path2;
+    std::reverse(path1.begin(), path1.end());
+    std::reverse(path2.begin(), path2.end());
+    while (path1.size() && path2.size()) {
+      auto [u1, v1] = path1.back();
+      auto [u2, v2] = path2.back();
+      int len = std::min(dis(u1, v1), dis(u2, v2));
+      auto update = [this, len](int u, int v,
+                                std::vector<std::pair<int, int>>& path,
+                                std::vector<std::pair<int, int>>& result_path) {
+        int mid = rooted_kth_ancester(v, u, len);
+        result_path.emplace_back(u, mid);
+        if (mid == v)
+          path.pop_back();
+        else
+          path.back().first = rooted_father(v, mid);
+      };
+      update(u1, v1, path1, result_path1);
+      update(u2, v2, path2, result_path2);
+    }
+    path1 = std::move(result_path1);
+    path2 = std::move(result_path2);
+  }
+
   // root is u, what is father of v
   int rooted_father(int u, int v) {
     if (!is_ancester(v, u)) return fa[v];
     return kth_ancester(u, dep[u] - dep[v] - 1);
+  }
+
+  // root is u, what is kth ancestor of v
+  int rooted_kth_ancester(int u, int v, int k) {
+    int lca = this->lca(u, v);
+    int dis_u_lca = dep[u] - dep[lca], dis_v_lca = dep[v] - dep[lca];
+    if (k > dis_u_lca + dis_v_lca) return -1;
+    if (k <= dis_v_lca) return kth_ancester(v, k);
+    return kth_ancester(u, dis_u_lca + dis_v_lca - k);
   }
 
   int n;
