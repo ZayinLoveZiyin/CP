@@ -79,6 +79,21 @@ struct convertor {
     os << t;
     return os.str();
   }
+
+  template <typename... Ts, std::size_t... I>
+  static std::string print_tuple(const std::tuple<Ts...>& t,
+                                 std::index_sequence<I...>) {
+    std::ostringstream os;
+    os << "(";
+    (..., (os << (!I ? "" : ", ") << std::get<I>(t)));
+    os << ")";
+    return os.str();
+  }
+
+  template <typename... Ts>
+  static std::string to_string(const std::tuple<Ts...>& t) {
+    return print_tuple(t, std::make_index_sequence<sizeof...(Ts)>());
+  }
 };
 
 class ostream {

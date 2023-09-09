@@ -17,5 +17,5 @@ class RMQ {
   }
 
  private:
-  std::vector<std::vector<int>> ST;
+  std::vector<std::vector<T>> ST;
 };
