@@ -370,20 +370,15 @@ struct Voronoi {
   static std::vector<std::vector<Point>> solve(
       const std::vector<Point>& p, const std::vector<Line>& boundary) {
     auto edges = Triangulation::delaunay(p);
-    auto [faces, unused] = PlanarGraphDuality::solve(p, edges);
     std::vector<std::vector<Line>> limit(p.size(), boundary);
-    for (const auto& f : faces) {
+    for (auto [i, j] : edges) {
       auto bisector = [&](const Point& p0, const Point& p1) {
         auto dir = (p1 - p0).rotate90();
         auto mid = (p0 + p1) / 2;
         return Line(mid, dir);
       };
-      for (int k = 0; k < f.size(); ++k) {
-        int i = f[k];
-        int j = f[(k + 1) % f.size()];
-        limit[i].push_back(bisector(p[i], p[j]));
-        limit[j].push_back(bisector(p[j], p[i]));
-      }
+      limit[i].push_back(bisector(p[i], p[j]));
+      limit[j].push_back(bisector(p[j], p[i]));
     }
     std::vector<std::vector<Point>> areas(p.size());
     for (int i = 0; i < p.size(); ++i) {
