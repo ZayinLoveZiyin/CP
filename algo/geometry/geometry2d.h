@@ -39,7 +39,12 @@ struct Point {
   double inner_prod(const Point& p) const { return x * p.x + y * p.y; }
   double len() const { return std::sqrt(x * x + y * y); }
   double len2() const { return x * x + y * y; }
+  // return (-pi,pi]
   double angle() const { return atan2(y, x); }
+  int angle_sign() const {
+    if (!y) return fsign(x) < 0;
+    return fsign(y);
+  }
   Point rotate90() const { return Point(-y, x); }
 
   static double cross_prod(const Point& o, const Point& a, const Point& b) {
@@ -74,8 +79,10 @@ struct Point {
 
   struct PolarComparer {
     bool operator()(const Point& lhs, const Point& rhs) const {
-      if (fsign(lhs.angle() - rhs.angle()) != 0)
-        return lhs.angle() < rhs.angle();
+      int angle_sign_diff = lhs.angle_sign() - rhs.angle_sign();
+      if (angle_sign_diff) return angle_sign_diff < 0;
+      int cross_prod_sign = fsign(lhs.cross_prod(rhs));
+      if (cross_prod_sign) return cross_prod_sign > 0;
       return lhs.len2() < rhs.len2();
     }
   };
@@ -144,23 +151,26 @@ struct Polygon {
 // intersection is finite.
 struct HalfPlaneIntersection {
   static std::vector<Point> solve(std::vector<Line> lines) {
-    sort(lines.begin(), lines.end(), [&](auto l1, auto l2) {
-      if (l1.is_same_direction(l2)) {
-        return l1.side(l2.pivot) < 0;
-      } else {
-        return l1.angle() < l2.angle();
-      }
-    });
+    sort(lines.begin(), lines.end(),
+         [comp = Point::PolarComparer()](auto l1, auto l2) {
+           if (l1.is_same_direction(l2)) {
+             return l1.side(l2.pivot) < 0;
+           } else {
+             return comp(l1.unit_direction, l2.unit_direction);
+           }
+         });
 
     std::deque<Line> key_lines;
     std::deque<Point> key_points;
     for (int i = 0; i < lines.size(); ++i) {
       if (i > 0 && lines[i - 1].is_same_direction(lines[i])) continue;
-      while (key_points.size() && lines[i].side(key_points.back()) < 0) {
+      while (key_points.size() && lines[i].side(key_points.back()) <= 0) {
+        ++CNT;
         key_lines.pop_back();
         key_points.pop_back();
       }
-      while (key_points.size() && lines[i].side(key_points.front()) < 0) {
+      while (key_points.size() && lines[i].side(key_points.front()) <= 0) {
+        ++CNT;
         key_lines.pop_front();
         key_points.pop_front();
       }
@@ -173,12 +183,13 @@ struct HalfPlaneIntersection {
       key_lines.push_back(lines[i]);
     }
 
-    while (key_points.size() && key_lines.front().side(key_points.back()) < 0) {
+    while (key_points.size() &&
+           key_lines.front().side(key_points.back()) <= 0) {
       key_lines.pop_back();
       key_points.pop_back();
     }
 
-    if (lines.size() <= 2) return {};
+    if (key_lines.size() <= 2) return {};
 
     std::vector<Point> convex;
     for (int i = 0; i < key_lines.size(); ++i)
