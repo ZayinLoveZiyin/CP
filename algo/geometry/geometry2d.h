@@ -165,12 +165,10 @@ struct HalfPlaneIntersection {
     for (int i = 0; i < lines.size(); ++i) {
       if (i > 0 && lines[i - 1].is_same_direction(lines[i])) continue;
       while (key_points.size() && lines[i].side(key_points.back()) <= 0) {
-        ++CNT;
         key_lines.pop_back();
         key_points.pop_back();
       }
       while (key_points.size() && lines[i].side(key_points.front()) <= 0) {
-        ++CNT;
         key_lines.pop_front();
         key_points.pop_front();
       }
@@ -391,11 +389,11 @@ struct Voronoi {
       limit[i].push_back(bisector(p[i], p[j]));
       limit[j].push_back(bisector(p[j], p[i]));
     }
-    std::vector<std::vector<Point>> areas(p.size());
+    std::vector<std::vector<Point>> regions(p.size());
     for (int i = 0; i < p.size(); ++i) {
-      areas[i] = HalfPlaneIntersection::solve(limit[i]);
+      regions[i] = HalfPlaneIntersection::solve(limit[i]);
     }
-    return areas;
+    return regions;
   }
 };
 
