@@ -1,49 +1,54 @@
 namespace matrix {
 
-struct size3 {
-  static constexpr int size = 3;
-};
-
-template <typename S, typename T>
-struct matrix : public std::vector<std::vector<T>> {
+template <typename T>
+struct Matrix : public std::vector<std::vector<T>> {
+  int n, m;
   using std::vector<std::vector<T>>::vector;
 
-  matrix(int x = 0) {
-    this->resize(size());
-    for (int i = 0; i < size(); ++i) {
-      this->at(i).resize(size());
-      for (int j = 0; j < size(); ++j) this->at(i)[j] = 0;
-    }
-    for (int i = 0; i < size(); ++i) this->at(i)[i] = x;
-  }
+  Matrix(int n, int m) : n(n), m(m) { this->resize(n, std::vector<T>(m)); }
 
-  constexpr static int size() { return S::size; }
-
-  friend matrix operator*(const matrix& lhs, const matrix& rhs) {
-    matrix res(0);
-    for (int i = 0; i < size(); ++i)
-      for (int k = 0; k < size(); ++k)
-        for (int j = 0; j < size(); ++j) res[i][j] += lhs[i][k] * rhs[k][j];
+  friend Matrix operator*(const Matrix& lhs, const Matrix& rhs) {
+    assert(lhs.m == rhs.n);
+    Matrix res(lhs.n, rhs.m);
+    for (int i = 0; i < lhs.n; ++i)
+      for (int k = 0; k < lhs.m; ++k)
+        for (int j = 0; j < rhs.m; ++j) res[i][j] += lhs[i][k] * rhs[k][j];
     return res;
   }
 
-  matrix pow(long long k) {
-    matrix res(1);
-    for (matrix a = *this; k; k >>= 1) {
+  Matrix pow(long long k) const {
+    assert(n == m);
+    Matrix res(n, m);
+    for (int i = 0; i < n; ++i) res[i][i] = 1;
+    for (Matrix a = *this; k; k >>= 1) {
       if (k & 1) res = res * a;
       a = a * a;
     }
     return res;
   }
 
-  static matrix merge(const matrix& lhs, const matrix& rhs) {
-    return lhs * rhs;
+  T sum() const {
+    T res = 0;
+    for (int i = 0; i < n; ++i) res += rowsum(i);
+    return res;
+  }
+  T rowsum(int i) const {
+    T res = 0;
+    for (int j = 0; j < m; ++j) res += this->at(i)[j];
+    return res;
+  }
+  T colsum(int j) const {
+    T res = 0;
+    for (int i = 0; i < n; ++i) res += this->at(i)[j];
+    return res;
   }
 
-  static matrix construct() {
+  static Matrix merge(const Matrix& lhs, const Matrix& rhs) { return lhs * rhs; }
+
+  static Matrix construct() {
     // TODO
   }
 };
 }  // namespace matrix
 
-using matrix3 = matrix::matrix<matrix::size3, zint>;
+using Matrix = matrix::Matrix<zint>;
