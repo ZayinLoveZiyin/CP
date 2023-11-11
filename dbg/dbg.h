@@ -94,6 +94,14 @@ struct convertor {
   static std::string to_string(const std::tuple<Ts...>& t) {
     return print_tuple(t, std::make_index_sequence<sizeof...(Ts)>());
   }
+
+  template <typename T>
+  static std::string to_string(const std::priority_queue<T>& q) {
+    auto q_copy = q;
+    std::vector<T> q_vec;
+    for (; q_copy.size(); q_copy.pop()) q_vec.push_back(q_copy.top());
+    return to_string(q_vec);
+  }
 };
 
 class ostream {
