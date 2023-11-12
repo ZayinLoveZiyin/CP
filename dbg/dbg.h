@@ -65,16 +65,17 @@ struct convertor {
 
   template <typename T, typename std::enable_if_t<
                             is_to_string_implemented<T>::value, int> = 0>
-  static std::string to_string(T t) {
+  static std::string to_string(const T& t) {
     return t.to_string();
   }
 
   template <typename T>
   static std::string to_string(
-      T t, typename std::enable_if_t<!is_to_string_implemented<T>::value &&
-                                         !std::is_arithmetic<T>::value &&
-                                         !is_iterable<T>::value,
-                                     int> = 0) {
+      const T& t,
+      typename std::enable_if_t<!is_to_string_implemented<T>::value &&
+                                    !std::is_arithmetic<T>::value &&
+                                    !is_iterable<T>::value,
+                                int> = 0) {
     std::ostringstream os;
     os << t;
     return os.str();
@@ -188,7 +189,7 @@ class debug_helper {
     return c == ']' || c == ')' || c == '}';
   }
   template <typename ostreamType, typename... Args>
-  static void dump(ostreamType& os, std::string names, Args... args) {
+  static void dump(ostreamType& os, std::string names, const Args&... args) {
     std::vector<std::string> val;
     (val.push_back(convertor::to_string(args)), ...);
     if (!names.size() || !val.size()) {
