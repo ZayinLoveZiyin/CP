@@ -36,6 +36,11 @@ struct convertor {
     return "'" + std::string(1, c) + "'";
   }
   static std::string to_string(const bool b) { return std::string(1, "FT"[b]); }
+  static std::string to_string(const double x) {
+    std::ostringstream os;
+    os << std::fixed << std::setprecision(10) << x;
+    return os.str();
+  }
   template <typename AT,
             typename std::enable_if_t<std::is_arithmetic<AT>::value, int> = 0>
   static std::string to_string(const AT a) {
