@@ -1,9 +1,9 @@
-struct directional_tarjan {
-  directional_tarjan(int n_) : n(n_), dfn(n_), low(n_), G(n_) {}
+struct DirectionalTarjan {
+  DirectionalTarjan(int n_) : n(n_), dfn(n_), low(n_), G(n_) {}
 
-  void add_edge(int u, int v) { G[u].push_back(v); }
+  void addEdge(int u, int v) { G[u].push_back(v); }
 
-  std::vector<int> get_scc() {
+  std::pair<int, std::vector<int>> getSCC() {
     dfn.assign(n, -1);
     low.assign(n, -1);
     int timestamp = 0, bel_id = 0;
@@ -36,7 +36,7 @@ struct directional_tarjan {
       if (!~dfn[i]) {
         dfs(i);
       }
-    return bel;
+    return {bel_id, bel};
   }
 
   int n;
