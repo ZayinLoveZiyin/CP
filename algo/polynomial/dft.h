@@ -54,8 +54,9 @@ class dft {
  private:
   typename std::vector<T>::iterator static get_subw(int len) {
     static std::vector<T> w = {0, 1};
+    static const T primitive_root = T::primitive_root();
     while (w.size() <= len) {
-      T e[] = {1, T::root().pow((T::modulus() - 1) / w.size())};
+      T e[] = {1, primitive_root.pow((T::modulus() - 1) / w.size())};
       w.resize(w.size() * 2);
       for (int i = w.size() / 2; i < w.size(); ++i) w[i] = w[i / 2] * e[i & 1];
     }

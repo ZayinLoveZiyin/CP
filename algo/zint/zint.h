@@ -1,7 +1,7 @@
 namespace modular {
 
 struct modulus_type {
-  static constexpr int root = 3;
+  static constexpr int primitive_root = 3;
   static constexpr int value = 998244353;
 };
 
@@ -11,7 +11,7 @@ class zint {
   using type = typename std::decay<decltype(T::value)>::type;
 
   constexpr static type modulus() { return T::value; }
-  constexpr static zint root() { return zint(T::root); }
+  constexpr static zint primitive_root() { return zint(T::primitive_root); }
 
   constexpr zint() : value(0) {}
   template <typename U,
@@ -85,8 +85,6 @@ class zint {
   }
 
   zint sqrt() const {
-    static std::mt19937_64 engine(
-        std::chrono::steady_clock::now().time_since_epoch().count());
     assert(is_sqrtable());
     if (modulus() == 2 || value == 0) return *this;
     if (modulus() % 4 == 3) return pow((modulus() + 1) / 4);

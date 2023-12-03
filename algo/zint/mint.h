@@ -88,4 +88,4 @@ class mint {
 
 }  // namespace modular
 
-using mint = modular::mint<1000000007>;
+using mint = modular::mint<998244353>;
