@@ -31,9 +31,9 @@ struct immutable_rolling_hash {
   using mint = modular::mint<P>;
 
   immutable_rolling_hash(const std::string& s)
-      : prefix_hash(s.size()), pwB(s.size()) {
+      : prefix_hash(s.size()), pwB(s.size() + 1) {
     pwB[0] = 1;
-    for (int i = 1; i < s.size(); ++i) pwB[i] = pwB[i - 1] * B;
+    for (int i = 1; i <= s.size(); ++i) pwB[i] = pwB[i - 1] * B;
 
     prefix_hash[0] = mint(s[0]);
     for (int i = 1; i < s.size(); ++i) {
