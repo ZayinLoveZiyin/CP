@@ -1,7 +1,10 @@
 struct info {
-  friend info operator+(const info& lhs, const info& rhs) {}
+  info() {}
+  friend info operator+(const info& lhs, const info& rhs) { return info(); }
 
-  friend std::ostream& operator<<(std::ostream& os, const info& v) {}
+  friend std::ostream& operator<<(std::ostream& os, const info& v) {
+    return os;
+  }
 };
 
 template <typename T>
@@ -14,7 +17,8 @@ class segment_tree {
   }
   template <typename U>
   segment_tree(
-      std::vector<U> a, auto trans = [](const U& u) { return T(u); })
+      std::vector<U> a,
+      std::function<T(U)> trans = [](const U& u) { return T(u); })
       : segment_tree(a.size()) {
     for (int i = 0; i < a.size(); ++i) tree[n + i] = trans(a[i]);
     for (int i = n; --i;) tree[i] = tree[i << 1] + tree[i << 1 | 1];
@@ -44,12 +48,15 @@ class segment_tree {
   // returns -1 if there is no such l.
   int find_left(int r, std::function<bool(const info&)> predicate) {
     assert(0 <= r && r < raw_n);
-    if (predicate(info())) return r + 1;
+    info cur_sum;
+    if (predicate(cur_sum)) return r + 1;
     for (r += n + 1;; r >>= 1)
       if ((r & 1) || r == 2) {
-        if (predicate(tree[r - 1])) {
+        if (predicate(tree[r - 1] + cur_sum)) {
           for (; r <= n;)
-            if (!predicate(tree[(r <<= 1) - 1])) --r;
+            if (!predicate(tree[(r <<= 1) - 1] + cur_sum)) {
+              cur_sum = tree[--r] + cur_sum;
+            }
           return r - n - 1;
         }
         --r;
@@ -62,12 +69,15 @@ class segment_tree {
   // returns n if there is no such r.
   int find_right(int l, std::function<bool(const info&)> predicate) {
     assert(0 <= l && l < raw_n);
-    if (predicate(info())) return l - 1;
+    info cur_sum;
+    if (predicate(cur_sum)) return l - 1;
     for (l += n;; l >>= 1)
       if (l & 1) {
-        if (predicate(tree[l])) {
+        if (predicate(cur_sum + tree[l])) {
           for (; l < n;)
-            if (!predicate(tree[l <<= 1])) ++l;
+            if (!predicate(cur_sum + tree[l <<= 1])) {
+              cur_sum + cur_sum + tree[l++];
+            }
           return l - n;
         }
         ++l;
