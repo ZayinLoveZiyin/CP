@@ -87,6 +87,26 @@ class lazy_segment_tree {
     return composite(1, 0, n - 1, l, r);
   }
 
+  std::vector<Info> flat(int a, int b) {
+    std::vector<Info> res;
+    std::function<void(int, int, int)> travel = [&](int k, int l, int r) {
+      if (l > b || a > r) return;
+      if (l == r) {
+        res.push_back(infos[k]);
+        return;
+      }
+      push(k);
+      int mid = (l + r) >> 1;
+      travel(k << 1, l, mid);
+      travel(k << 1 | 1, mid + 1, r);
+      pull(k);
+    };
+    travel(1, 0, n - 1);
+    return res;
+  }
+
+  std::vector<Info> flat() { return flat(0, n - 1); }
+
  private:
   inline void push(int k) {
     apply(k << 1, tags[k]);
