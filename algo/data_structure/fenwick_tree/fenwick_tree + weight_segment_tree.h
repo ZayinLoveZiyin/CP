@@ -6,8 +6,7 @@ class weight_segment_tree {
   int add(int k, int l, int r, int p, T d) {
     if (p < l || p > r) return k;
     if (!~k) k = newnode();
-    ++sum[k];
-    // dbgf("a", k, l, r, sum[k]);
+    sum[k] = sum[k] + d;
     if (l == r) return k;
     int mid = (l + r) >> 1;
     lson[k] = add(lson[k], l, mid, p, d);
@@ -21,11 +20,8 @@ class weight_segment_tree {
   }
 
   T query(int k, int l, int r, int a, int b) {
-    if (!~k || a > b || l > b || a > r) return 0;
-    if (a <= l && r <= b) {
-      // dbgf("q", k, l, r, a, b, sum[k]);
-      return sum[k];
-    }
+    if (!~k || a > b || l > b || a > r) return T();
+    if (a <= l && r <= b) return sum[k];
     int mid = (l + r) >> 1;
     return query(lson[k], l, mid, a, b) + query(rson[k], mid + 1, r, a, b);
   }
@@ -58,10 +54,9 @@ class fenwick_tree_2d {
   fenwick_tree_2d(int n_, int m_)
       : n(n_), tree(n_, weight_segment_tree<T>(m_)) {}
 
-  void add(int x, int y) {
+  void add(int x, int y, T d) {
     for (int i = x + 1; i <= n; i += i & -i) {
-      dbgf("add", i, y);
-      tree[i - 1].add(y, 1);
+      tree[i - 1].add(y, d);
     }
   }
 
@@ -69,17 +64,14 @@ class fenwick_tree_2d {
     auto ans = T();
     for (int i = x + 1; i > 0; i -= i & -i) {
       T t = tree[i - 1].query(ly, ry);
-      dbgf("qeury", i, ly, ry, t);
-      ans += t;
+      ans = ans + t;
     }
     return ans;
   }
 
   T range_sum(int lx, int rx, int ly, int ry) {
     T tr = prefix_sum(rx, ly, ry);
-    dbg(tr);
     T tl = prefix_sum(lx - 1, ly, ry);
-    dbg(tl);
     return tr - tl;
   }
 
