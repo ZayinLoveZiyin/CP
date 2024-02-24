@@ -52,7 +52,9 @@ struct convertor {
   static std::string to_string(const VT& v, const int indent_width = 0) {
     if (!v.size()) return std::string(indent_width, ' ') + "{}";
     std::string res;
-    if constexpr (is_iterable<decltype(*v.begin())>::value) {
+    if constexpr (is_iterable<decltype(*v.begin())>::value &&
+                  !std::is_convertible<decltype(*v.begin()),
+                                       std::string>::value) {
       res = "{\n";
       for (auto it = v.begin(); it != v.end(); ++it) {
         res += to_string(*it, indent_width + 1) + ",\n";
@@ -107,6 +109,12 @@ struct convertor {
     std::vector<T> q_vec;
     for (; q_copy.size(); q_copy.pop()) q_vec.push_back(q_copy.top());
     return to_string(q_vec);
+  }
+
+  template <typename T>
+  static std::string to_string(const std::optional<T>& opt) {
+    if (!opt.has_value()) return "none";
+    return to_string(opt.value());
   }
 };
 
