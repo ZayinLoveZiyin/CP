@@ -1,9 +1,10 @@
+template <typename Container = std::vector<int>>
 struct SuffixArray {
   int n;
-  std::string s;
+  Container s;
   // lc[0]=0 is meaningless
   std::vector<int> sa, rk, lc;
-  SuffixArray(const std::string& s)
+  SuffixArray(const Container& s)
       : s(s), n(s.size()), sa(s.size()), rk(s.size()), lc(s.size()) {
     std::iota(sa.begin(), sa.end(), 0);
     std::sort(sa.begin(), sa.end(), [&](int a, int b) { return s[a] < s[b]; });
@@ -43,11 +44,15 @@ struct SuffixArray {
   }
 };
 
+template <typename Container = std::vector<int>>
 class LongestCommonPrefix {
  public:
-  LongestCommonPrefix(SuffixArray* sa) : sa(sa), st(sa->lc) {}
+  LongestCommonPrefix(SuffixArray<Container>* sa) : sa(sa), st(sa->lc) {}
 
   int lcp(int i, int j) {
+    assert(0 <= i && i <= sa->n);
+    assert(0 <= j && j <= sa->n);
+    if (i == sa->n || j == sa->n) return 0;
     if (i == j) return sa->n - i;
     int l = sa->rk[i], r = sa->rk[j];
     if (l > r) std::swap(l, r);
@@ -55,6 +60,6 @@ class LongestCommonPrefix {
   }
 
  private:
-  SuffixArray* sa;
+  SuffixArray<Container>* sa;
   SparseTable<int> st;
 };
