@@ -21,6 +21,12 @@ struct binomial {
     if (n < 0 || m < 0 || m > n) return T(0);
     return fac(n) * finv(m) * finv(n - m);
   }
+  static T C_bf(int n, int m) {
+    if (n < 0 || m < 0 || m > n) return T(0);
+    T p = 1;
+    for (int i = 0; i < m; ++i) p *= n - i;
+    return p * finv(m);
+  }
   static T A(int n, int m) {
     if (n < 0 || m < 0 || m > n) return T(0);
     return fac(n) * finv(n - m);
@@ -47,4 +53,4 @@ struct binomial {
   }
 };
 
-using zbinomial = binomial<zint>;
+using mbinomial = binomial<mint>;
