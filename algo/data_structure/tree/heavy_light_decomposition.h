@@ -55,6 +55,16 @@ struct HeavyLightDecomposition {
   // is u ancester of v
   bool isAncester(int u, int v) { return in[u] <= in[v] && out[v] <= out[u]; }
 
+  bool isInLink(int p, int u, int v) {
+    assert(isAncester(u, v));
+    return isAncester(u, p) && isAncester(p, v);
+  }
+
+  bool isInPath(int p, int u, int v) {
+    int l = lca(u, v);
+    return isInLink(p, l, u) || isInLink(p, l, v);
+  }
+
   int dis(int u, int v) { return dep[u] + dep[v] - 2 * dep[lca(u, v)]; }
 
   int kthAncester(int u, int k) {
@@ -62,6 +72,23 @@ struct HeavyLightDecomposition {
     int d = dep[u] - k;
     while (dep[top[u]] > d) u = fa[top[u]];
     return seq[in[u] + d - dep[u]];
+  }
+
+  std::optional<std::pair<int, int>> pathIntersection(int u1, int v1, int u2,
+                                                      int v2) {
+    int lca1 = lca(u1, v1);
+    int lca2 = lca(u2, v2);
+    std::vector<int> candidates;
+    if (!isInLink(lca1, lca2, u2) && !isInLink(lca1, lca2, v2) &&
+        !isInLink(lca2, lca1, u1) && !isInLink(lca2, lca1, v1))
+      return std::nullopt;
+    candidates.push_back(lca(u1, u2));
+    candidates.push_back(lca(u1, v2));
+    candidates.push_back(lca(v1, u2));
+    candidates.push_back(lca(v1, v2));
+    std::sort(candidates.begin(), candidates.end(),
+              [&](int x, int y) { return dep[x] > dep[y]; });
+    return std::make_pair(candidates.end()[-1], candidates.end()[-2]);
   }
 
   std::vector<std::pair<int, int>> getPath(int u, int v) {
@@ -83,6 +110,7 @@ struct HeavyLightDecomposition {
 
   // root is u, what is father of v
   int rootedFather(int u, int v) {
+    assert(u != v);
     if (!isAncester(v, u)) return fa[v];
     return kthAncester(u, dep[u] - dep[v] - 1);
   }
