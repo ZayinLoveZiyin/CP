@@ -27,6 +27,29 @@ struct Matrix : public std::vector<std::vector<T>> {
     return res;
   }
 
+  T determinant() const {
+    assert(n == m);
+    std::vector<std::vector<T>> v = *this;
+    T res = 1;
+    for (int i = 0; i < n; ++i) {
+      int pivot = i;
+      for (int k = 0; k < n; ++k)
+        if (v[k][i]) pivot = i;
+      if (i != pivot) {
+        std::swap(v[i], v[pivot]);
+        res = -res;
+      }
+      if (!v[i][i]) return T(0);
+      for (int k = i + 1; k < n; ++k) {
+        T t = v[k][i] / v[i][i];
+        for (int j = 0; j < n; ++j) v[k][j] -= v[i][j] * t;
+      }
+      dbg(v);
+    }
+    for (int i = 0; i < n; ++i) res *= v[i][i];
+    return res;
+  }
+
   T sum() const {
     T res = 0;
     for (int i = 0; i < n; ++i) res += rowsum(i);
@@ -43,7 +66,9 @@ struct Matrix : public std::vector<std::vector<T>> {
     return res;
   }
 
-  static Matrix merge(const Matrix& lhs, const Matrix& rhs) { return lhs * rhs; }
+  static Matrix merge(const Matrix& lhs, const Matrix& rhs) {
+    return lhs * rhs;
+  }
 
   static Matrix construct() {
     // TODO
@@ -51,4 +76,4 @@ struct Matrix : public std::vector<std::vector<T>> {
 };
 }  // namespace matrix
 
-using Matrix = matrix::Matrix<zint>;
+using Matrix = matrix::Matrix<double>;

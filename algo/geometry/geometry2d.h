@@ -287,6 +287,11 @@ struct Circle {
   // 1: outside
   // 0: edge
   // -1: inside
+  // equal to solving following determinant (a,b,c is counter-clockwise)
+  // | ax, ay, ax^2+ay^2, 1 |
+  // | bx, by, bx^2+by^2, 1 |
+  // | cx, cy, cx^2+cy^2, 1 |
+  // | px, py, px^2+py^2, 1 |
   static int side(const Point& a, Point b, Point c, const Point& p) {
     if (fsign(Point::crossProd(a, b, c)) < 0) std::swap(b, c);
     Point3D a3(a), b3(b), c3(c), p3(p);

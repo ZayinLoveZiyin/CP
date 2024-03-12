@@ -1,5 +1,6 @@
 template <typename T>
 struct binomial {
+  static T exclusion_cof(int n) { return (n & 1) ? -1 : 1; }
   static T fac(int n) {
     static std::vector<T> f = {1};
     while (f.size() <= n) f.push_back(f.back() * f.size());
