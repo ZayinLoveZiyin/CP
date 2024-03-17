@@ -11,9 +11,11 @@ struct TwoSAT : public DirectionalTarjan {
   inline int var_id(int u) { return u >> 1; }
   inline int opposite(int u) { return u ^ 1; }
   void addOr(int u, int v) {
-    addEdge(opposite(u), v);
-    addEdge(opposite(v), u);
+    DirectionalTarjan::addEdge(opposite(u), v);
+    DirectionalTarjan::addEdge(opposite(v), u);
   }
+  // do not call addEdge for mistake!
+  void addEdge(int u, int v) { assert(0); }
 
   // find one possible solution, O(n)
   std::optional<std::vector<bool>> getOneSolution() {
@@ -29,8 +31,8 @@ struct TwoSAT : public DirectionalTarjan {
   // find at most m solutions, O(mn^2/w)
   template <int LEN = 1 << 20>
   std::vector<std::vector<bool>> getMultipleSolution(int m) {
-    if (LEN > 1 && 2 * n < LEN / 2) return getMultipleSolution<LEN / 2>(m);
-    assert(2 * n < LEN);
+    if (LEN > 1 && 2 * n <= LEN / 2) return getMultipleSolution<LEN / 2>(m);
+    assert(2 * n <= LEN);
     auto [bcnt, bel] = getSCC();
     for (int i = 0; i < n; ++i) {
       if (bel[T(i)] == bel[F(i)]) return {};
@@ -38,11 +40,11 @@ struct TwoSAT : public DirectionalTarjan {
     std::vector<int> order(2 * n);
     std::iota(order.begin(), order.end(), 0);
     std::sort(order.begin(), order.end(),
-              [&](int u, int v) { return bel[u] > bel[v]; });
+              [&](int u, int v) { return bel[u] < bel[v]; });
     std::vector<std::bitset<LEN>> reachable(2 * n);
     std::vector<std::bitset<LEN>> reachable_opposite(2 * n);
 
-    for (int u = 0; u < n * 2; ++u) {
+    for (int u : order) {
       for (int v : G[u]) reachable[u] |= reachable[v];
       for (int v = 0; v < n * 2; ++v)
         if (bel[u] == bel[v]) reachable[u].set(v);
@@ -64,7 +66,8 @@ struct TwoSAT : public DirectionalTarjan {
         if (!dfs(i + 1)) return false;
       } else {
         auto test = [&](int u) {
-          if ((reachable_opposite[u] & vised).none()) {
+          if (!reachable_opposite[u][u] &&
+              (reachable_opposite[u] & vised).none()) {
             std::bitset<LEN> backup = vised;
             vised |= reachable[u];
             if (!dfs(i + 1)) return false;
