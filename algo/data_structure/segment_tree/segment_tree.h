@@ -1,9 +1,12 @@
 struct info {
-  info() {}
-  friend info operator+(const info& lhs, const info& rhs) { return info(); }
+  int cnt;
+  info(int c = 0) : cnt(c) {}
+  friend info operator+(const info& lhs, const info& rhs) {
+    return info(lhs.cnt + rhs.cnt);
+  }
 
   friend std::ostream& operator<<(std::ostream& os, const info& v) {
-    return os;
+    return os << v.cnt;
   }
 };
 
@@ -43,6 +46,14 @@ class segment_tree {
     return prodL + prodR;
   }
 
+  std::vector<info> flat(int a, int b) {
+    std::vector<info> res;
+    for (int i = a; i <= b; ++i) res.push_back(tree[n + i]);
+    return res;
+  }
+
+  std::vector<info> flat() { return flat(0, raw_n - 1); }
+
   // find max l s.t. predicate(composite(l,r)) returns true,
   // should guarantee that for all p<=l, predicate(composite(p,r)) return true
   // returns -1 if there is no such l.
@@ -76,7 +87,7 @@ class segment_tree {
         if (predicate(cur_sum + tree[l])) {
           for (; l < n;)
             if (!predicate(cur_sum + tree[l <<= 1])) {
-              cur_sum + cur_sum + tree[l++];
+              cur_sum = cur_sum + tree[l++];
             }
           return l - n;
         }
