@@ -65,7 +65,7 @@ struct Point {
     return std::atan2(crossProd(p), innerProd(p));
   }
   // return (-pi,pi]
-  long double angle() const { return atan2(y, x); }
+  long double angle() const { return std::atan2(y, x); }
   int angleSign() const {
     if (!y) return fsign(x) < 0;
     return fsign(y);
